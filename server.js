@@ -1,7 +1,7 @@
 const express = require('express');
-const axios = require('axios');
-const cheerio = require('cheerio');
 const cors = require('cors');
+const scrapeBananaRepublic = require('./src/scrapers/bananarepublicscraper.js');
+const scrapeRalphLauren = require('./src/scrapers/ralphlaurenscraper.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,36 +18,15 @@ app.get('/test', (req, res) => {
   res.send('Test endpoint is working');
 });
 
-// Function to scrape data from Banana Republic
-const scrapeBananaRepublic = async () => {
-  try {
-    const { data } = await axios.get('https://bananarepublic.gap.com/');
-    const $ = cheerio.load(data);
-    const items = [];
-
-    $('.product-card').each((index, element) => {
-      const title = $(element).find('.product-card__title').text().trim();
-      const price = $(element).find('.product-card__price').text().trim();
-      const image = $(element).find('.product-card__image img').attr('src');
-
-      console.log({ title, price, image });
-
-      if (title && price && image) {
-        items.push({ title, price, image });
-      }
-    });
-
-    return items;
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-};
-
-
 // Endpoint to get Banana Republic clothing data
 app.get('/api/banana-republic', async (req, res) => {
   const items = await scrapeBananaRepublic();
+  res.json(items);
+});
+
+// Endpoint to get Ralph Lauren clothing data
+app.get('/api/ralph-lauren', async (req, res) => {
+  const items = await scrapeRalphLauren();
   res.json(items);
 });
 
